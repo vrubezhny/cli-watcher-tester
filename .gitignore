@@ -1,0 +1,12 @@
+bin/
+
+# Generated/copied at build time
+# NOT in git; regenerated on every `make build`. Build will fail if
+# $CHE_MACHINE_EXEC_DIR is unset or doesn't contain timeout/cli-watcher.go.
+internal/timeout/cli-watcher.go
+
+# Editor / OS
+*.swp
+*.swo
+*~
+.DS_Store

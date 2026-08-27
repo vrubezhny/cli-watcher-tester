@@ -1,0 +1,19 @@
+# Example .noidle file for the CLI Watcher tester.
+# Use with --config=$(pwd)/.noidle.example
+
+# Note: the watcher's main switch is now --enabled / CLI_ACTIVITY_TRACKER_ENABLED.
+# The 'enabled' field here is deprecated and ignored by the watcher.
+
+# These fields are USER-tunable. Env vars (CLI_ACTIVITY_TRACKER_*) are
+# ADMIN ceilings; values here can only be SMALLER (stricter) than the
+# admin ceiling, never larger.
+checkPeriod: 30s
+activityWindow: 5m
+gracePeriod: 2m
+maxProcessAge: 2h
+
+# Force-watch opencode in /loop mode so the watcher never lets the
+# workspace idle while it's running, regardless of TTY activity.
+watchedCommands:
+  - name: opencode
+    interactive: false     # always prevent idling while opencode is running

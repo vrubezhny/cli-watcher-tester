@@ -1,0 +1,65 @@
+#compdef cli-watcher-tester cwt
+# zsh completion for cli-watcher-tester / cwt (any path).
+#
+# Install (zsh), in .zshrc:
+#   fpath=("/path/to/cli-watcher-tester/completions" $fpath)
+#   autoload -Uz compinit && compinit
+#   compdef _cli-watcher-tester -default-
+#
+# Or after compinit:
+#   source /path/to/cli-watcher-tester/completions/_cli-watcher-tester
+#
+# The basename gate covers execution via any path or symlink name
+# cli-watcher-tester / cwt; other commands keep the default behavior.
+
+_cli_watcher_tester_resolve_bin() {
+	emulate -L zsh
+	local cmd="$1"
+	local resolved
+	resolved="$(whence -p -- "$cmd" 2>/dev/null)" && {
+		print -r -- "$resolved"
+		return 0
+	}
+	local dir="${0:A:h}/../bin"
+	[[ -x "$dir/cli-watcher-tester" ]] && {
+		print -r -- "$dir/cli-watcher-tester"
+		return 0
+	}
+	return 1
+}
+
+_cli-watcher-tester() {
+	emulate -L zsh
+	setopt local_options no_aliases
+
+	local cmd="${words[1]}"
+	local base="${cmd:t}"
+
+	case "$base" in
+	cli-watcher-tester | cwt) ;;
+	*)
+		_default
+		return
+		;;
+	esac
+
+	local bin
+	bin="$(_cli_watcher_tester_resolve_bin "$cmd")" || {
+		_files
+		return
+	}
+
+	# Args after the command word, including the partial current word.
+	local -a out
+	out=("${(@f)$("$bin" __complete "${(@)words[2,-1]}" 2>/dev/null)}")
+
+	if ((${#out})); then
+		compadd -a out
+	else
+		# No candidates → filename fallback (parity with bash -o default).
+		_files
+	fi
+}
+
+# Allow `source …/_cli-watcher-tester` after compinit without fpath setup.
+(( $+functions[compdef] )) && compdef _cli-watcher-tester -default-

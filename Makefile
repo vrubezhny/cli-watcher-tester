@@ -1,13 +1,23 @@
 # CLI Watcher Tester Makefile
 #
-# Builds a standalone tester for che-machine-exec's timeout/cli-watcher.go.
+# Builds a standalone tester for che-machine-exec's timeout/ package.
 # The watcher source is copied from $CHE_MACHINE_EXEC_DIR (defaults to
 # ../che-machine-exec) on every build so the tester always exercises
 # the current source.
 
 CHE_MACHINE_EXEC_DIR ?= ../che-machine-exec
-WATCHER_SRC          := $(CHE_MACHINE_EXEC_DIR)/timeout/cli-watcher.go
-WATCHER_DST          := internal/timeout/cli-watcher.go
+WATCHER_DST_DIR      := internal/timeout
+
+# Files synced from $CHE_MACHINE_EXEC_DIR/timeout/
+WATCHER_FILES := \
+	activity_source.go \
+	activity_source_codex_app_server.go \
+	activity_source_tty.go \
+	cli-watcher.go \
+	procutil.go
+
+WATCHER_SRC := $(addprefix $(CHE_MACHINE_EXEC_DIR)/timeout/,$(WATCHER_FILES))
+WATCHER_DST := $(addprefix $(WATCHER_DST_DIR)/,$(WATCHER_FILES))
 
 BIN                  := bin/cli-watcher-tester
 PKG                  := ./...
@@ -16,9 +26,9 @@ PKG                  := ./...
 
 all: build
 
-# Copy cli-watcher.go from che-machine-exec into our internal package.
-# Cheap (~1ms), so build depends on it.
-# Hard precondition: the source file MUST exist. If not, fail with a
+# Copy the WATCHER_FILES list from che-machine-exec/timeout/ into our
+# internal package. Cheap (~1ms), so build depends on it.
+# Hard precondition: every source file MUST exist. If not, fail with a
 # clear message rather than producing a half-built state.
 sync:
 	@if [ -z "$(CHE_MACHINE_EXEC_DIR)" ]; then \
@@ -27,15 +37,22 @@ sync:
 		echo "    make build CHE_MACHINE_EXEC_DIR=/path/to/che-machine-exec" >&2; \
 		exit 1; \
 	fi
-	@if [ ! -f "$(WATCHER_SRC)" ]; then \
-		echo "ERROR: che-machine-exec source not found at: $(WATCHER_SRC)" >&2; \
-		echo "  Set CHE_MACHINE_EXEC_DIR to the directory containing timeout/cli-watcher.go, e.g.:" >&2; \
+	@missing=0; \
+	for src in $(WATCHER_SRC); do \
+		if [ ! -f "$$src" ]; then \
+			echo "ERROR: che-machine-exec source not found: $$src" >&2; \
+			missing=1; \
+		fi; \
+	done; \
+	if [ $$missing -ne 0 ]; then \
+		echo "  Set CHE_MACHINE_EXEC_DIR to your che-machine-exec checkout, e.g.:" >&2; \
 		echo "    make build CHE_MACHINE_EXEC_DIR=/path/to/che-machine-exec" >&2; \
 		exit 1; \
 	fi
-	@mkdir -p $(dir $(WATCHER_DST))
-	cp $(WATCHER_SRC) $(WATCHER_DST)
-	@echo "synced $(WATCHER_SRC) -> $(WATCHER_DST)"
+	@rm -rf $(WATCHER_DST_DIR)
+	@mkdir -p $(WATCHER_DST_DIR)
+	cp $(WATCHER_SRC) $(WATCHER_DST_DIR)/
+	@echo "synced $(words $(WATCHER_FILES)) file(s) -> $(WATCHER_DST_DIR)/"
 
 # Compile binary
 build: sync

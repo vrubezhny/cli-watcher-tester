@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: cli-watcher-tester
+
+      - uses: actions/checkout@v4
+        with:
+          repository: vrubezhny/che-machine-exec
+          path: che-machine-exec
+          fetch-depth: 1
+          # Temporary: branch has activity_source*/procutil.go (upstream main
+          # lacks them; Makefile WATCHER_FILES would fail sync)
+          ref: feature/cli-watcher-codex-app-server-via-hooks
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: cli-watcher-tester/go.mod
+
+      - name: Build
+        working-directory: cli-watcher-tester
+        run: make build CHE_MACHINE_EXEC_DIR=../che-machine-exec
+
+      - name: Test
+        working-directory: cli-watcher-tester
+        run: make test CHE_MACHINE_EXEC_DIR=../che-machine-exec

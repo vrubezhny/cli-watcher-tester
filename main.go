@@ -94,7 +94,7 @@ func main() {
 			"Empty = upward search from $PROJECT_SOURCE / $PROJECTS_ROOT / cwd, then $HOME/.noidle.")
 	fs.StringVar(&activitySources, "activitySources", "",
 		"Sets CLI_ACTIVITY_TRACKER_ACTIVITY_SOURCES. "+
-			"Comma-separated list, e.g. 'tty:disabled,codex-app-server'. "+
+			"Comma-separated list, e.g. 'tty:disabled,codex-app-server-api'. "+
 			"Empty = watcher's default (tty).")
 
 	// Hidden shell-completion entry point (see completions/).

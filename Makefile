@@ -11,8 +11,10 @@ WATCHER_DST_DIR      := internal/timeout
 # Files synced from $CHE_MACHINE_EXEC_DIR/timeout/
 WATCHER_FILES := \
 	activity_source.go \
-	activity_source_codex_app_server.go \
+	activity_source_codex_app_server_api.go \
 	activity_source_tty.go \
+	codex_app_server_client.go \
+	codex_app_server_discovery.go \
 	cli-watcher.go \
 	procutil.go
 
@@ -56,6 +58,7 @@ sync:
 
 # Compile binary
 build: sync
+	go mod tidy
 	go build -o $(BIN) .
 
 # Run variants. All depend on build.
